@@ -3,13 +3,14 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 dotenv.config();
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT;
 
-app.use(express.json());
+const start = () => {
+    app.use(express.json());
 
-app.get("/", (req: Request, res: Response) => {
-  res.send("Express + TypeScript server running!");
-});
+    app.get("/", (req: Request, res: Response) => {
+        res.send("Express + TypeScript server running!");
+    });
 
 
 app.listen(PORT, () => {
@@ -22,3 +23,6 @@ app.listen(PORT, () => {
         console.log(error);
     })
 });
+}
+
+start();

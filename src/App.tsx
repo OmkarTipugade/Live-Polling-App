@@ -1,5 +1,5 @@
 import LandingPage from "./pages/LandingPage"
-import { BrowserRouter, Routes, Route } from "react-router"
+import { Routes, Route } from "react-router"
 import TeacherPage from "./pages/TeacherPage"
 import StudentPage from "./pages/StudentPage"
 import ChatBox from "./pages/ChatBox"
@@ -7,9 +7,12 @@ import TeacherQuePage from "./pages/TeacherQuePage"
 import ProtectedRoute from "./components/ProtectedRoute"
 import UnauthorizedPage from "./pages/UnauthorizedPage"
 import { useLocation } from "react-router"
+import StudentQuePage from "./pages/StudentQuePage"
 const App = () => {
 
   const location = useLocation()
+
+  const hideChatBox = location.pathname !== "/" && location.pathname !== "/student";
 
   return (
     <div>
@@ -20,6 +23,14 @@ const App = () => {
             element={
               <ProtectedRoute allowedRoles={["student"]}>
                 <StudentPage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/student/que" 
+            element={
+              <ProtectedRoute allowedRoles={["student"]}>
+                <StudentQuePage/>
               </ProtectedRoute>
             } 
           />
@@ -41,7 +52,7 @@ const App = () => {
           />
           <Route path="*" element={<UnauthorizedPage />} />
         </Routes>
-      {location.pathname !== "/" && <ChatBox accessor="teacher"/>}
+      {hideChatBox && <ChatBox accessor="teacher"/>}
     </div>
   )
 }
