@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import BadgeStar from "./BadgeStar";
+import BadgeStar from "../components/BadgeStar";
 
 const LandingPage: React.FC = () => {
   const [selectedRole, setSelectedRole] = useState<string>("student");

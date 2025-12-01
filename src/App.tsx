@@ -1,10 +1,20 @@
-import LandingPage from "./components/LandingPage"
-
+import LandingPage from "./pages/LandingPage"
+import { BrowserRouter, Routes, Route } from "react-router"
+import TeacherPage from "./pages/TeacherPage"
+import StudentPage from "./pages/StudentPage"
+import ChatBox from "./pages/ChatBox"
 const App = () => {
 
   return (
     <div>
-      <LandingPage />
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/student" element={<StudentPage />} />
+          <Route path="/teacher" element={<TeacherPage />} />
+        </Routes>
+      </BrowserRouter>
+      <ChatBox accessor="teacher"/>
     </div>
   )
 }
