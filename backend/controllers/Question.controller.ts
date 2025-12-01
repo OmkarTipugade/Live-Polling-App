@@ -3,7 +3,7 @@ import { PollSession } from "../models/PollSession.model.js";
 import { Question } from "../models/Question.model.js";
 import { Answer } from "../models/Answer.model.js";
 
-export const createQuestion = async (req: Request, res: Response, next: NextFunction) => {
+const createQuestion = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { sessionId } = req.params;
     const { text, options, timeLimit } = req.body;
@@ -11,7 +11,7 @@ export const createQuestion = async (req: Request, res: Response, next: NextFunc
     const session = await PollSession.findById(sessionId).populate("students");
     if (!session) return res.status(404).json({ message: "Session not found" });
 
-    // Rule: Ask new question only if no current question or everyone answered
+    // Ask new question only if no current question or everyone answered
     if (session.currentQuestionId) {
       const currentQuestion = await Question.findById(session.currentQuestionId);
       if (currentQuestion) {
@@ -45,7 +45,7 @@ export const createQuestion = async (req: Request, res: Response, next: NextFunc
   }
 };
 
-export const getCurrentQuestion = async (req: Request, res: Response, next: NextFunction) => {
+const getCurrentQuestion = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { sessionId } = req.params;
     const session = await PollSession.findById(sessionId);
@@ -61,7 +61,7 @@ export const getCurrentQuestion = async (req: Request, res: Response, next: Next
   }
 };
 
-export const getQuestionResults = async (req: Request, res: Response, next: NextFunction) => {
+const getQuestionResults = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { questionId } = req.params;
     const question = await Question.findById(questionId);
@@ -80,3 +80,9 @@ export const getQuestionResults = async (req: Request, res: Response, next: Next
     next(err);
   }
 };
+
+export {
+    createQuestion,
+    getCurrentQuestion,
+    getQuestionResults
+}

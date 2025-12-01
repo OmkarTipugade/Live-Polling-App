@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
 
-export interface ApiResponse {
+interface ApiResponse {
   success: boolean;
   message?: string;
   data?: any;
@@ -15,7 +15,7 @@ declare global {
   }
 }
 
-export const responseHandler = (
+const responseHandler = (
   req: Request,
   res: Response,
   next: NextFunction
@@ -43,3 +43,7 @@ export const responseHandler = (
 
   next();
 };
+
+export {
+    responseHandler
+}

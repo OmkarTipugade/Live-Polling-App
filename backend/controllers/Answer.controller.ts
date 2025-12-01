@@ -3,7 +3,7 @@ import { Answer } from "../models/Answer.model.js";
 import { Question } from "../models/Question.model.js";
 import { PollSession } from "../models/PollSession.model.js";
 
-export const submitAnswer = async (req: Request, res: Response, next: NextFunction) => {
+const submitAnswer = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { questionId } = req.params;
     const { studentId, selectedOption } = req.body;
@@ -50,3 +50,7 @@ export const submitAnswer = async (req: Request, res: Response, next: NextFuncti
     next(err);
   }
 };
+
+export {
+    submitAnswer
+}
