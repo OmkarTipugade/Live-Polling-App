@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from "react-router"
 import TeacherPage from "./pages/TeacherPage"
 import StudentPage from "./pages/StudentPage"
 import ChatBox from "./pages/ChatBox"
+import TeacherQuePage from "./pages/TeacherQuePage"
 const App = () => {
 
   return (
@@ -12,6 +13,7 @@ const App = () => {
           <Route path="/" element={<LandingPage />} />
           <Route path="/student" element={<StudentPage />} />
           <Route path="/teacher" element={<TeacherPage />} />
+          <Route path="/teacher/que" element={<TeacherQuePage />} />
         </Routes>
       </BrowserRouter>
       <ChatBox accessor="teacher"/>

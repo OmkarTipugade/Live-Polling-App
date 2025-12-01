@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import PollOption from "./PollOption";
-import eye from "../assets/eye.png";
+import PollOption from "../components/PollOption";
+import { MdRemoveRedEye } from "react-icons/md";
 
 interface questionType {
   qno: number;
@@ -31,7 +31,7 @@ const TeacherQuePage:React.FC = () => {
     <div className="min-h-screen bg-white relative px-4 py-10 sora">
       <div className="absolute top-6 right-6 z-10">
         <button className="flex items-center gap-2 cursor-pointer bg-[#8F64E1] text-white text-sm font-medium px-5 py-2 rounded-full shadow">
-          <img src={eye} className="h-5 w-5" />
+          <MdRemoveRedEye className="h-5 w-5 text-white" />
           View Poll history
         </button>
       </div>

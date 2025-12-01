@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import PollOption from "./PollOption";
+import PollOption from "../components/PollOption";
 import eye from "../assets/eye.png";
 
 interface queType {
