@@ -83,6 +83,7 @@ export interface QuestionData {
     options: string[];
     timeLimit: number;
     startTime: Date;
+    questionNumber?: number;
 }
 
 export interface ResultsData {

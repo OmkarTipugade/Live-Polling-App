@@ -109,9 +109,12 @@ const StudentQuePage: React.FC = () => {
   return (
     <div className="min-h-screen bg-white relative px-4 py-10 sora">
       <div className="max-w-xl w-full mx-auto pt-14">
-        <div className="flex justify-start items-center gap-9">
-          <div className="text-black font-semibold text-xl mb-5">Question</div>
-          <div className="flex space-x-2 items-center mb-5">
+        <div className="flex justify-between items-center mb-5">
+          <div className="text-black font-semibold text-xl">
+            Question{" "}
+            {question.questionNumber ? `#${question.questionNumber}` : ""}
+          </div>
+          <div className="flex space-x-2 items-center">
             <img src={clock} className="h-5 w-5" alt="clock" />
             <div className="text-red-500 font-medium">
               {`${String(Math.floor(timer / 60)).padStart(2, "0")}:${String(

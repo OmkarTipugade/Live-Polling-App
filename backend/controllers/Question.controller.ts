@@ -55,7 +55,23 @@ const getCurrentQuestion = async (req: Request, res: Response, next: NextFunctio
     }
 
     const question = await Question.findById(session.currentQuestionId);
-    res.json({ question });
+    
+    if (!question) {
+      return res.json({ question: null });
+    }
+    
+    // Calculate question number (position in questions array)
+    const questionIndex = session.questions.findIndex(
+      (qId) => qId.toString() === session.currentQuestionId!.toString()
+    );
+    const questionNumber = questionIndex >= 0 ? questionIndex + 1 : undefined;
+    
+    res.json({ 
+      question: {
+        ...question.toObject(),
+        questionNumber
+      }
+    });
   } catch (err) {
     next(err);
   }

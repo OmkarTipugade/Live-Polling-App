@@ -65,13 +65,20 @@ export const setupSocketHandlers = (io: Server) => {
                         
                         // Check if the question is still active
                         if (currentQuestion.isActive) {
+                            // Find question number (position in questions array)
+                            const questionIndex = session.questions.findIndex(
+                                (qId) => qId.toString() === currentQuestion._id.toString()
+                            );
+                            const questionNumber = questionIndex >= 0 ? questionIndex + 1 : undefined;
+                            
                             socket.emit(SOCKET_EVENTS.QUESTION_ASKED, {
                                 question: {
                                     id: currentQuestion._id,
                                     text: currentQuestion.text,
                                     options: currentQuestion.options,
                                     timeLimit: currentQuestion.timeLimit,
-                                    startTime: currentQuestion.startTime
+                                    startTime: currentQuestion.startTime,
+                                    questionNumber
                                 }
                             });
                         }
@@ -109,6 +116,9 @@ export const setupSocketHandlers = (io: Server) => {
                 session.currentQuestionId = question._id;
                 await session.save();
 
+                // Question number is the position in the questions array
+                const questionNumber = session.questions.length;
+
                 // Broadcast the new question to all clients in the session
                 io.to(sessionId).emit(SOCKET_EVENTS.QUESTION_ASKED, {
                     question: {
@@ -116,7 +126,8 @@ export const setupSocketHandlers = (io: Server) => {
                         text: question.text,
                         options: question.options,
                         timeLimit: question.timeLimit,
-                        startTime: question.startTime
+                        startTime: question.startTime,
+                        questionNumber
                     }
                 });
 

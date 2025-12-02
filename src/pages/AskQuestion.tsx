@@ -12,6 +12,7 @@ import { FaCopy } from "react-icons/fa6";
 import { toast } from "react-toastify";
 import toastOptions from "../utils/ToastOptions";
 import { api } from "../utils/api";
+import clock from "../assets/clock.png";
 
 interface OptionType {
   id: number;
@@ -26,6 +27,7 @@ const AskQuestion: React.FC = () => {
   const [answeredCount, setAnsweredCount] = useState(0);
   const [totalStudents, setTotalStudents] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [timer, setTimer] = useState(0);
 
   const sessionId = localStorage.getItem("sessionId");
 
@@ -48,7 +50,15 @@ const AskQuestion: React.FC = () => {
             options: currentQuestion.options,
             timeLimit: currentQuestion.timeLimit,
             startTime: currentQuestion.startTime,
+            questionNumber: currentQuestion.questionNumber,
           });
+
+          // Calculate remaining time
+          const elapsed = Math.floor(
+            (Date.now() - new Date(currentQuestion.startTime).getTime()) / 1000
+          );
+          const remaining = Math.max(0, currentQuestion.timeLimit - elapsed);
+          setTimer(remaining);
 
           // Initialize results with 0 votes
           const initialResults: Record<string, number> = {};
@@ -72,6 +82,7 @@ const AskQuestion: React.FC = () => {
     SOCKET_EVENTS.QUESTION_ASKED,
     (data) => {
       setQuestion(data.question);
+      setTimer(data.question.timeLimit);
       // Initialize results with 0 votes
       const initialResults: Record<string, number> = {};
       data.question.options.forEach((opt) => {
@@ -104,6 +115,16 @@ const AskQuestion: React.FC = () => {
   useSocketEvent<{ message: string }>(SOCKET_EVENTS.ERROR, (data) => {
     toast.error(data.message, toastOptions);
   });
+
+  // Timer countdown
+  useEffect(() => {
+    if (timer > 0 && question) {
+      const interval = setInterval(() => {
+        setTimer((prev) => Math.max(0, prev - 1));
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [timer, question]);
 
   const handleAskNewQuestion = () => {
     navigate("/teacher");
@@ -192,8 +213,19 @@ const AskQuestion: React.FC = () => {
       </div>
       <div className="max-w-xl w-full mx-auto pt-14">
         <div className="flex justify-between items-center mb-5">
-          <div className="text-black font-semibold text-xl">
-            Current Question
+          <div className="flex items-center gap-4">
+            <div className="text-black font-semibold text-xl">
+              Question{" "}
+              {question.questionNumber ? `#${question.questionNumber}` : ""}
+            </div>
+            <div className="flex space-x-2 items-center">
+              <img src={clock} className="h-5 w-5" alt="clock" />
+              <div className="text-red-500 font-medium">
+                {`${String(Math.floor(timer / 60)).padStart(2, "0")}:${String(
+                  timer % 60
+                ).padStart(2, "0")}`}
+              </div>
+            </div>
           </div>
           <div className="text-sm text-gray-600">
             {answeredCount} / {totalStudents || "?"} students answered
