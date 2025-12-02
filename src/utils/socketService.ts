@@ -1,6 +1,6 @@
 import { io, Socket } from "socket.io-client";
 
-const BACKEND_URL = "https://live-polling-app-1-m2q3.onrender.com";
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 class SocketService {
     private socket: Socket | null = null;
