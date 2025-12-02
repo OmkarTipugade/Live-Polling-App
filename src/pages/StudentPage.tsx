@@ -1,15 +1,53 @@
 import { useState } from "react";
+import { useNavigate } from "react-router";
+import { useSocketEmit } from "../hooks/useSocketEvent";
+import { SOCKET_EVENTS } from "../utils/socketEvents";
 import BadgeStar from "../components/BadgeStar";
 import { toast } from "react-toastify";
 import toastOptions from "../utils/ToastOptions";
 
 const StudentPage: React.FC = () => {
+  const navigate = useNavigate();
+  const { emit } = useSocketEmit();
   const [name, setName] = useState<string>("");
+  const [sessionCode, setSessionCode] = useState<string>("");
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (name) {
-      toast.success(`Welcome, ${name}!`, toastOptions);
+
+    if (!name.trim()) {
+      toast.error("Please enter your name", toastOptions);
+      return;
     }
+
+    if (!sessionCode.trim()) {
+      toast.error("Please enter session code", toastOptions);
+      return;
+    }
+
+    // Generate unique user ID
+    const userId = `student_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+    // Store user info in localStorage
+    localStorage.setItem("userId", userId);
+    localStorage.setItem("userName", name);
+    localStorage.setItem("sessionId", sessionCode);
+    localStorage.setItem("role", "student");
+
+    // Join session via socket
+    emit(SOCKET_EVENTS.JOIN_SESSION, {
+      sessionId: sessionCode,
+      userId,
+      userName: name,
+      role: "student"
+    });
+
+    toast.success(`Welcome, ${name}!`, toastOptions);
+
+    // Navigate to question page
+    setTimeout(() => {
+      navigate("/student/que");
+    }, 1000);
   };
 
   return (
@@ -21,10 +59,10 @@ const StudentPage: React.FC = () => {
 
         <div className="space-y-3 md:space-y-4">
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-sora font-normal text-black">
-            Let’s <span className="font-semibold">Get Started</span>
+            Let's <span className="font-semibold">Get Started</span>
           </h1>
           <p className="text-[#5C5B5B] text-sm sm:text-base md:text-lg max-w-full md:max-w-2xl lg:max-w-3xl mx-auto px-2 sm:px-0">
-            If you’re a student, you’ll be able to{" "}
+            If you're a student, you'll be able to{" "}
             <strong className="text-black">submit your answers</strong>,
             participate in live polls, and see how your responses compare with
             your classmates.
@@ -49,6 +87,24 @@ const StudentPage: React.FC = () => {
               onChange={(e) => setName(e.target.value)}
               required
               placeholder="Rahul Bajaj"
+              className="w-full px-4 py-3 sm:py-3.5 text-base sm:text-lg rounded-md bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-colors"
+            />
+          </div>
+
+          <div className="text-left">
+            <label
+              htmlFor="sessionCode"
+              className="block mb-2 text-sm sm:text-base font-medium text-black"
+            >
+              Enter Session Code
+            </label>
+            <input
+              id="sessionCode"
+              type="text"
+              value={sessionCode}
+              onChange={(e) => setSessionCode(e.target.value)}
+              required
+              placeholder="ABC123"
               className="w-full px-4 py-3 sm:py-3.5 text-base sm:text-lg rounded-md bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-colors"
             />
           </div>

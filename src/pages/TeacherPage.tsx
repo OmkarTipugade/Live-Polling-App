@@ -1,4 +1,9 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router";
+import { useSocketEmit } from "../hooks/useSocketEvent";
+import { SOCKET_EVENTS } from "../utils/socketEvents";
+import { toast } from "react-toastify";
+import toastOptions from "../utils/ToastOptions";
 import { FaCaretDown } from "react-icons/fa";
 import BadgeStar from "../components/BadgeStar";
 
@@ -7,12 +12,16 @@ interface optionType {
   isCorrect: boolean;
 }
 const TeacherPage:React.FC = () => {
+  const navigate = useNavigate();
+  const { emit } = useSocketEmit();
   const [question, setQuestion] = useState<string>("");
   const [options, setOptions] = useState<optionType[]>([
     { value: "", isCorrect: false },
     { value: "", isCorrect: false },
   ]);
   const [duration, setDuration] = useState("60");
+
+  const sessionId = localStorage.getItem("sessionId");
 
   const handleOptionChange = (index:number, newValue:string) => {
     const updated = [...options];
@@ -30,6 +39,40 @@ const TeacherPage:React.FC = () => {
     if (options.length < 5) {
       setOptions([...options, { value: "", isCorrect: false }]);
     }
+  };
+
+  const handleAskQuestion = () => {
+    // Validation
+    if (!question.trim()) {
+      toast.error("Please enter a question", toastOptions);
+      return;
+    }
+
+    const filledOptions = options.filter(opt => opt.value.trim() !== "");
+    if (filledOptions.length < 2) {
+      toast.error("Please provide at least 2 options", toastOptions);
+      return;
+    }
+
+    if (!sessionId) {
+      toast.error("No active session found", toastOptions);
+      return;
+    }
+
+    // Emit new question via socket
+    emit(SOCKET_EVENTS.NEW_QUESTION, {
+      sessionId,
+      text: question,
+      options: filledOptions.map(opt => opt.value),
+      timeLimit: parseInt(duration)
+    });
+
+    toast.success("Question sent to all students!", toastOptions);
+
+    // Navigate to results page
+    setTimeout(() => {
+      navigate("/teacher/que");
+    }, 1000);
   };
 
   return (
@@ -140,7 +183,9 @@ const TeacherPage:React.FC = () => {
       <hr className="w-full border-gray-200 my-10" />
       <div className="w-full max-w-3xl">
         <div className="flex justify-end">
-          <button className="px-6 py-3 bg-linear-to-r from-[#8F64E1] to-[#1D68BD] text-white font-semibold rounded-full hover:opacity-90 transition">
+          <button 
+            onClick={handleAskQuestion}
+            className="px-6 py-3 bg-linear-to-r from-[#8F64E1] to-[#1D68BD] text-white font-semibold rounded-full hover:opacity-90 transition">
             Ask Question
           </button>
         </div>
