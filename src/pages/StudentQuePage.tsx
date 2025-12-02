@@ -251,12 +251,19 @@ const StudentQuePage: React.FC = () => {
             </button>
           )}
         </div>
-        {submitted && !showResults && (
-          <div className="flex justify-center items-center mt-8">
+        {submitted && !showResults && question.questionNumber === 1 && (
+          <div className="flex justify-center items-center mt-8 gap-3">
             <BadgeStar />
             <RiLoader4Fill className="animate-spin text-[#8F64E1] h-6 w-6" />
             <span className="text-black text-lg font-medium text-center">
               Wait for the teacher to ask a new question...
+            </span>
+          </div>
+        )}
+        {submitted && !showResults && question.questionNumber !== 1 && (
+          <div className="flex justify-center items-center mt-8">
+            <span className="text-black text-lg font-medium text-center">
+              Wait for the teacher to ask a next question...
             </span>
           </div>
         )}
