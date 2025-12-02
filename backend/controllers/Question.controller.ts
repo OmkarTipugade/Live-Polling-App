@@ -11,18 +11,14 @@ const createQuestion = async (req: Request, res: Response, next: NextFunction) =
     const session = await PollSession.findById(sessionId).populate("students");
     if (!session) return res.status(404).json({ message: "Session not found" });
 
-    // Ask new question only if no current question or everyone answered
+    // Auto-inactivate previous question if it exists and is still active
     if (session.currentQuestionId) {
       const currentQuestion = await Question.findById(session.currentQuestionId);
-      if (currentQuestion) {
-        const answersCount = await Answer.countDocuments({ questionId: currentQuestion._id });
-        const studentsCount = session.students.length;
-
-        if (answersCount < studentsCount) {
-          return res.status(400).json({
-            message: "Cannot ask new question until all students answer the previous one",
-          });
-        }
+      if (currentQuestion && currentQuestion.isActive) {
+        // Mark previous question as inactive
+        currentQuestion.isActive = false;
+        await currentQuestion.save();
+        // Students who haven't answered miss their chance
       }
     }
 

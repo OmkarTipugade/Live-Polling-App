@@ -49,29 +49,7 @@ const ChatBox: React.FC<{ accessor: string }> = ({ accessor }) => {
     }
   );
 
-  // Listen for when a student joins
-  useSocketEvent<{ userId: string; userName: string }>(
-    SOCKET_EVENTS.STUDENT_JOINED,
-    (data) => {
-      if (accessor === "teacher") {
-        toast.success(`${data.userName} joined the session!`, toastOptions);
-      }
-    }
-  );
 
-  // Listen for when a student is kicked
-  useSocketEvent<{ studentId: string }>(
-    SOCKET_EVENTS.STUDENT_KICKED,
-    (data) => {
-      if (data.studentId === userId) {
-        toast.error("You have been kicked from the session!", toastOptions);
-        setTimeout(() => {
-          localStorage.clear();
-          window.location.href = "/";
-        }, 2000);
-      }
-    }
-  );
 
   const handleChatIconClick = () => {
     setIsOpen(!isOpen);
@@ -89,7 +67,6 @@ const ChatBox: React.FC<{ accessor: string }> = ({ accessor }) => {
       studentId,
     });
 
-    toast.success("Student has been kicked out", toastOptions);
   };
 
   const handleSendMessage = () => {

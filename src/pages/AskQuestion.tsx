@@ -107,7 +107,6 @@ const AskQuestion: React.FC = () => {
     if (data.questionId === question?.id) {
       setResults(data.results);
       setAnsweredCount(data.totalAnswers || 0);
-      toast.info("Question ended! Results are now final.", toastOptions);
     }
   });
 

@@ -68,7 +68,6 @@ const TeacherPage: React.FC = () => {
       timeLimit: duration,
     });
 
-    toast.success("Question sent to all students!", toastOptions);
 
     setTimeout(() => {
       navigate("/teacher/que");

@@ -102,6 +102,33 @@ export const setupSocketHandlers = (io: Server) => {
                     return;
                 }
 
+                // Auto-inactivate previous question if it exists and is still active
+                if (session.currentQuestionId) {
+                    const previousQuestion = await Question.findById(session.currentQuestionId);
+                    if (previousQuestion && previousQuestion.isActive) {
+                        // Mark previous question as inactive
+                        previousQuestion.isActive = false;
+                        await previousQuestion.save();
+
+                        // Get and emit final results for the previous question
+                        const previousAnswers = await Answer.find({ questionId: previousQuestion._id });
+                        const previousCounts: Record<string, number> = {};
+                        previousQuestion.options.forEach(opt => previousCounts[opt] = 0);
+                        previousAnswers.forEach(a => {
+                            previousCounts[a.selectedOption] = (previousCounts[a.selectedOption] || 0) + 1;
+                        });
+
+                        // Broadcast final results for previous question
+                        io.to(sessionId).emit(SOCKET_EVENTS.SHOW_RESULTS, {
+                            questionId: previousQuestion._id,
+                            results: previousCounts,
+                            totalAnswers: previousAnswers.length
+                        });
+
+                        console.log(`Previous question ${previousQuestion._id} auto-inactivated due to new question`);
+                    }
+                }
+
                 const question = await Question.create({
                     pollSessionId: sessionId,
                     text,

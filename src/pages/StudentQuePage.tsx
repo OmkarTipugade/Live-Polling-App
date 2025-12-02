@@ -39,18 +39,30 @@ const StudentQuePage: React.FC = () => {
     }
   );
 
-  // Listen for results
+  // Listen for answer submission success
+  useSocketEvent<{ success: boolean; answerId: string }>(
+    SOCKET_EVENTS.ANSWER_SUBMITTED,
+    (data) => {
+      if (data.success) {
+        setShowResults(true); // Show percentages immediately after submission
+      }
+    }
+  );
+
+  // Listen for real-time result updates (update percentages as other students answer)
+  useSocketEvent<ResultsData>(SOCKET_EVENTS.UPDATE_RESULTS, (data) => {
+    if (submitted) {
+      // Only show to students who have submitted
+      setResults(data.results);
+      setShowResults(true);
+    }
+  });
+
+  // Listen for final results when question ends
   useSocketEvent<ResultsData>(SOCKET_EVENTS.SHOW_RESULTS, (data) => {
     setResults(data.results);
     setShowResults(true);
     setSubmitted(true);
-  });
-
-  // Listen for real-time result updates
-  useSocketEvent<ResultsData>(SOCKET_EVENTS.UPDATE_RESULTS, (data) => {
-    if (showResults) {
-      setResults(data.results);
-    }
   });
 
   // Listen for errors
@@ -86,7 +98,6 @@ const StudentQuePage: React.FC = () => {
     });
 
     setSubmitted(true);
-    toast.success("Answer submitted!", toastOptions);
   };
 
   if (!question) {
