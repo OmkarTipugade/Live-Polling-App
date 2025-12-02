@@ -18,6 +18,7 @@ const StudentQuePage: React.FC = () => {
   const [question, setQuestion] = useState<QuestionData | null>(null);
   const [timer, setTimer] = useState(0);
   const [submitted, setSubmitted] = useState(false);
+  const [answerConfirmed, setAnswerConfirmed] = useState(false); // Track when server confirms answer
   const [results, setResults] = useState<Record<string, number>>({});
   const [showResults, setShowResults] = useState(false);
   const [isInitialWait, setIsInitialWait] = useState(true); // Track if waiting for first question
@@ -49,6 +50,7 @@ const StudentQuePage: React.FC = () => {
       setQuestion(data.question);
       setTimer(data.question.timeLimit);
       setSubmitted(false);
+      setAnswerConfirmed(false); // Reset answer confirmation
       setShowResults(false);
       setSelectedOption(null);
       setResults({});
@@ -62,6 +64,7 @@ const StudentQuePage: React.FC = () => {
     SOCKET_EVENTS.ANSWER_SUBMITTED,
     (data) => {
       if (data.success) {
+        setAnswerConfirmed(true); // Mark answer as confirmed by server
         setShowResults(true); // Show percentages immediately after submission
       }
     }
@@ -251,7 +254,7 @@ const StudentQuePage: React.FC = () => {
             </button>
           )}
         </div>
-        {submitted && !showResults && question.questionNumber === 1 && (
+        {answerConfirmed && !showResults && question.questionNumber === 1 && (
           <div className="flex justify-center items-center mt-8 gap-3">
             <BadgeStar />
             <RiLoader4Fill className="animate-spin text-[#8F64E1] h-6 w-6" />
@@ -260,7 +263,7 @@ const StudentQuePage: React.FC = () => {
             </span>
           </div>
         )}
-        {submitted && !showResults && question.questionNumber !== 1 && (
+        {answerConfirmed && !showResults && question.questionNumber !== 1 && (
           <div className="flex justify-center items-center mt-8">
             <span className="text-black text-lg font-medium text-center">
               Wait for the teacher to ask a next question...
