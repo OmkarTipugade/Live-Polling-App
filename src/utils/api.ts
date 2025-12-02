@@ -1,94 +1,94 @@
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
+import axios from 'axios';
 
-// API Service for backend communication
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+
+const axiosInstance = axios.create({
+    baseURL: BACKEND_URL,
+    headers: {
+        'Content-Type': 'application/json',
+    },
+    timeout: 10000,
+});
+
+axiosInstance.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error.response) {
+            const message = error.response.data?.message || error.response.data?.error || 'Server error occurred';
+            throw new Error(message);
+        } else if (error.request) {
+            throw new Error('No response from server. Please check your connection.');
+        } else {
+            throw new Error(error.message || 'Request failed');
+        }
+    }
+);
+
 export const api = {
-    // Poll Session APIs
     async createSession(teacherName: string) {
-        const response = await fetch(`${BACKEND_URL}/api/sessions`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ teacherName })
-        });
-        if (!response.ok) throw new Error("Failed to create session");
-        return response.json();
+        const response = await axiosInstance.post('/api/sessions', { teacherName });
+        return response.data;
     },
 
     async joinSession(sessionId: string, name: string) {
-        const response = await fetch(`${BACKEND_URL}/api/sessions/${sessionId}/join`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ name })
-        });
-        if (!response.ok) throw new Error("Failed to join session");
-        return response.json();
+        const response = await axiosInstance.post(`/api/sessions/${sessionId}/join`, { name });
+        return response.data;
     },
 
     async kickStudent(sessionId: string, studentId: string) {
-        const response = await fetch(`${BACKEND_URL}/api/sessions/${sessionId}/students/${studentId}`, {
-            method: "DELETE"
-        });
-        if (!response.ok) throw new Error("Failed to kick student");
-        return response.json();
+        const response = await axiosInstance.delete(`/api/sessions/${sessionId}/students/${studentId}`);
+        return response.data;
     },
 
     // Question APIs
     async createQuestion(sessionId: string, text: string, options: string[], timeLimit: number) {
-        const response = await fetch(`${BACKEND_URL}/api/questions/${sessionId}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ text, options, timeLimit })
+        const response = await axiosInstance.post(`/api/questions/${sessionId}`, {
+            text,
+            options,
+            timeLimit
         });
-        if (!response.ok) throw new Error("Failed to create question");
-        return response.json();
+        return response.data;
     },
 
     async getCurrentQuestion(sessionId: string) {
-        const response = await fetch(`${BACKEND_URL}/api/questions/${sessionId}/current`);
-        if (!response.ok) throw new Error("Failed to get current question");
-        return response.json();
+        const response = await axiosInstance.get(`/api/questions/${sessionId}/current`);
+        return response.data;
     },
 
     async getQuestionResults(questionId: string) {
-        const response = await fetch(`${BACKEND_URL}/api/questions/${questionId}/results`);
-        if (!response.ok) throw new Error("Failed to get results");
-        return response.json();
+        const response = await axiosInstance.get(`/api/questions/${questionId}/results`);
+        return response.data;
     },
 
     // Answer APIs
     async submitAnswer(questionId: string, studentId: string, selectedOption: string) {
-        const response = await fetch(`${BACKEND_URL}/api/answers/${questionId}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ studentId, selectedOption })
+        const response = await axiosInstance.post(`/api/answers/${questionId}`, {
+            studentId,
+            selectedOption
         });
-        if (!response.ok) throw new Error("Failed to submit answer");
-        return response.json();
+        return response.data;
     },
 
     // Chat APIs
     async sendMessage(pollSessionId: string, senderId: string, senderRole: "teacher" | "student", message: string) {
-        const response = await fetch(`${BACKEND_URL}/api/chat/send`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ pollSessionId, senderId, senderRole, message })
+        const response = await axiosInstance.post('/api/chat/send', {
+            pollSessionId,
+            senderId,
+            senderRole,
+            message
         });
-        if (!response.ok) throw new Error("Failed to send message");
-        return response.json();
+        return response.data;
     },
 
     async getMessages(pollSessionId: string) {
-        const response = await fetch(`${BACKEND_URL}/api/chat/${pollSessionId}`);
-        if (!response.ok) throw new Error("Failed to get messages");
-        return response.json();
+        const response = await axiosInstance.get(`/api/chat/${pollSessionId}`);
+        return response.data;
     },
 
     async deleteMessage(messageId: string, senderId: string, role: "teacher" | "student") {
-        const response = await fetch(`${BACKEND_URL}/api/chat/${messageId}`, {
-            method: "DELETE",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ senderId, role })
+        const response = await axiosInstance.delete(`/api/chat/${messageId}`, {
+            data: { senderId, role }
         });
-        if (!response.ok) throw new Error("Failed to delete message");
-        return response.json();
+        return response.data;
     }
 };
