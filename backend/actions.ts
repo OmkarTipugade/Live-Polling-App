@@ -53,6 +53,7 @@ export interface NewQuestionPayload {
     sessionId: string;
     text: string;
     options: string[];
+    correctAnswer?: string; // Optional correct answer
     timeLimit: number;
 }
 

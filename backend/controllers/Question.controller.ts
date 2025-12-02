@@ -26,6 +26,7 @@ const createQuestion = async (req: Request, res: Response, next: NextFunction) =
       pollSessionId: session._id,
       text,
       options,
+      correctAnswer: req.body.correctAnswer, // Store correct answer
       timeLimit: timeLimit || 60,
       startTime: new Date(),
       isActive: true,
@@ -93,8 +94,47 @@ const getQuestionResults = async (req: Request, res: Response, next: NextFunctio
   }
 };
 
+const getSessionHistory = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { sessionId } = req.params;
+
+    const session = await PollSession.findById(sessionId).populate('questions');
+    if (!session) {
+      return res.status(404).json({ message: "Session not found" });
+    }
+
+    // For each question, get answer counts
+    const history = await Promise.all(
+      (session.questions as any[]).map(async (question: any) => {
+        const answers = await Answer.find({ questionId: question._id });
+        
+        const voteCounts: Record<string, number> = {};
+        question.options.forEach((opt: string) => voteCounts[opt] = 0);
+        answers.forEach((answer: any) => {
+          voteCounts[answer.selectedOption] = (voteCounts[answer.selectedOption] || 0) + 1;
+        });
+
+        return {
+          question: question.text,
+          options: question.options.map((opt: string, idx: number) => ({
+            id: idx + 1,
+            text: opt,
+            votes: voteCounts[opt] || 0
+          })),
+          answer: question.correctAnswer || "Not specified"
+        };
+      })
+    );
+
+    res.json({ history });
+  } catch (err) {
+    next(err);
+  }
+};
+
 export {
     createQuestion,
     getCurrentQuestion,
-    getQuestionResults
+    getQuestionResults,
+    getSessionHistory
 }

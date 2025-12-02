@@ -90,5 +90,11 @@ export const api = {
             data: { senderId, role }
         });
         return response.data;
+    },
+
+    // History API
+    async getSessionHistory(sessionId: string) {
+        const response = await axiosInstance.get(`/api/questions/session/${sessionId}/history`);
+        return response.data;
     }
 };

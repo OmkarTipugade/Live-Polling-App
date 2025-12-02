@@ -22,7 +22,6 @@ const StudentQuePage: React.FC = () => {
   const [showResults, setShowResults] = useState(false);
   const [isInitialWait, setIsInitialWait] = useState(true); // Track if waiting for first question
 
-  // Get session and user info from sessionStorage
   const sessionId = sessionStorage.getItem("sessionId");
   const studentId = sessionStorage.getItem("userId");
 

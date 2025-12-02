@@ -129,14 +129,22 @@ export const setupSocketHandlers = (io: Server) => {
                     }
                 }
 
-                const question = await Question.create({
+                // Create question with optional correct answer
+                const questionData: any = {
                     pollSessionId: sessionId,
                     text,
                     options,
                     timeLimit: timeLimit || 60,
                     startTime: new Date(),
                     isActive: true
-                });
+                };
+                
+                // Only add correctAnswer if it's provided
+                if (data.correctAnswer) {
+                    questionData.correctAnswer = data.correctAnswer;
+                }
+
+                const question = await Question.create(questionData);
 
                 // Update session with current question
                 session.questions.push(question._id);

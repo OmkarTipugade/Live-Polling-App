@@ -72,6 +72,7 @@ const TeacherPage: React.FC = () => {
       sessionId,
       text: question,
       options: filledOptions.map((opt) => opt.value),
+      correctAnswer: filledOptions.find((opt) => opt.isCorrect)?.value,
       timeLimit: duration,
     });
 

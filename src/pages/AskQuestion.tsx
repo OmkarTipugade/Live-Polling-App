@@ -130,7 +130,7 @@ const AskQuestion: React.FC = () => {
   };
 
   const handleViewHistory = () => {
-    toast.info("Poll history feature coming soon!", toastOptions);
+    navigate("/teacher/history");
   };
 
   const handleCopySessionCode = () => {
