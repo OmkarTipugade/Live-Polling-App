@@ -55,6 +55,13 @@ const TeacherPage: React.FC = () => {
       return;
     }
 
+    // Check if at least one correct option is selected
+    const hasCorrectOption = filledOptions.some((opt) => opt.isCorrect);
+    if (!hasCorrectOption) {
+      toast.error("Please select at least one correct option", toastOptions);
+      return;
+    }
+
     if (!sessionId) {
       toast.error("No active session found", toastOptions);
       return;
