@@ -123,9 +123,9 @@ export const setupSocketHandlers = (io: Server) => {
                     questionData.correctAnswer = data.correctAnswer;
                 }
 
-                const question = await Question.create(questionData);
+                const question = await Question.create(questionData) as any;
 
-                // Update session with current question
+                // Add question to session
                 session.questions.push(question._id);
                 session.currentQuestionId = question._id;
                 await session.save();
@@ -133,7 +133,7 @@ export const setupSocketHandlers = (io: Server) => {
                 // Question number is the position in the questions array
                 const questionNumber = session.questions.length;
 
-                // Broadcast the new question to all clients in the session
+                // Broadcast question to all students in the session
                 io.to(sessionId).emit(SOCKET_EVENTS.QUESTION_ASKED, {
                     question: {
                         id: question._id,
@@ -157,7 +157,7 @@ export const setupSocketHandlers = (io: Server) => {
                         // Get results
                         const answers = await Answer.find({ questionId: question._id });
                         const counts: Record<string, number> = {};
-                        question.options.forEach(opt => counts[opt] = 0);
+                        question.options.forEach((opt: string) => counts[opt] = 0);
                         answers.forEach(a => {
                             counts[a.selectedOption] = (counts[a.selectedOption] || 0) + 1;
                         });
