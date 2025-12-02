@@ -11,7 +11,7 @@ interface optionType {
   value: string;
   isCorrect: boolean;
 }
-const TeacherPage:React.FC = () => {
+const TeacherPage: React.FC = () => {
   const navigate = useNavigate();
   const { emit } = useSocketEmit();
   const [question, setQuestion] = useState<string>("");
@@ -23,13 +23,13 @@ const TeacherPage:React.FC = () => {
 
   const sessionId = localStorage.getItem("sessionId");
 
-  const handleOptionChange = (index:number, newValue:string) => {
+  const handleOptionChange = (index: number, newValue: string) => {
     const updated = [...options];
     updated[index].value = newValue;
     setOptions(updated);
   };
 
-  const handleCorrectChange = (index:number, isCorrect: boolean) => {
+  const handleCorrectChange = (index: number, isCorrect: boolean) => {
     const updated = [...options];
     updated[index].isCorrect = isCorrect;
     setOptions(updated);
@@ -48,7 +48,7 @@ const TeacherPage:React.FC = () => {
       return;
     }
 
-    const filledOptions = options.filter(opt => opt.value.trim() !== "");
+    const filledOptions = options.filter((opt) => opt.value.trim() !== "");
     if (filledOptions.length < 2) {
       toast.error("Please provide at least 2 options", toastOptions);
       return;
@@ -63,16 +63,15 @@ const TeacherPage:React.FC = () => {
     emit(SOCKET_EVENTS.NEW_QUESTION, {
       sessionId,
       text: question,
-      options: filledOptions.map(opt => opt.value),
-      timeLimit: duration
+      options: filledOptions.map((opt) => opt.value),
+      timeLimit: duration,
     });
 
     toast.success("Question sent to all students!", toastOptions);
 
-    // Navigate to results page
-    setTimeout(() => {
-      navigate("/teacher/que");
-    }, 1000);
+    // Navigate to results page immediately
+    // The AskQuestion component will receive the question via socket event
+    navigate("/teacher/que");
   };
 
   return (
@@ -183,9 +182,10 @@ const TeacherPage:React.FC = () => {
       <hr className="w-full border-gray-200 my-10" />
       <div className="w-full max-w-3xl">
         <div className="flex justify-end">
-          <button 
+          <button
             onClick={handleAskQuestion}
-            className="px-6 py-3 bg-linear-to-r from-[#8F64E1] to-[#1D68BD] text-white font-semibold rounded-full hover:opacity-90 transition">
+            className="px-6 py-3 bg-linear-to-r from-[#8F64E1] to-[#1D68BD] text-white font-semibold rounded-full hover:opacity-90 transition"
+          >
             Ask Question
           </button>
         </div>

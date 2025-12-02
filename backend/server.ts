@@ -24,12 +24,12 @@ const corsOptions = {
     credentials: true,
 }
 
-// Initialize Socket.io with CORS
+// Initilized socket.io server
 const io = new Server(httpServer, {
     cors: {
         origin: process.env.FRONTEND_URL as string,
+        methods: ["GET", "POST","PUT","DELETE","PATCH"],
         credentials: true,
-        methods: ["GET", "POST"]
     }
 });
 

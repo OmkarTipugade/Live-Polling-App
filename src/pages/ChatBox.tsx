@@ -1,82 +1,112 @@
 import React, { useState } from "react";
 import { LuMessageSquare } from "react-icons/lu";
+import { useSocketEvent, useSocketEmit } from "../hooks/useSocketEvent";
+import {
+  SOCKET_EVENTS,
+  type ChatMessage,
+  type Participant,
+} from "../utils/socketEvents";
+import { toast } from "react-toastify";
+import toastOptions from "../utils/ToastOptions";
 
 interface messageType {
   id: number;
   text: string;
   sender: string;
-}
-interface participantType {
-  id: number;
-  name: string;
+  senderRole: string;
 }
 
 const ChatBox: React.FC<{ accessor: string }> = ({ accessor }) => {
+  const { emit } = useSocketEmit();
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<string>("chat");
-  const [messages, setMessages] = useState<messageType[]>([
-    {
-      id: 1,
-      text: "Hello, how can I help?",
-      sender: "user1",
-    },
-    {
-      id: 2,
-      text: "Hello, how can I help?",
-      sender: "user2",
-    },
-  ]);
-
-  const [participants, setParticipants] = useState<participantType[]>([
-    { id: 1, name: "user1" },
-    { id: 2, name: "user2" },
-    { id: 3, name: "raj" },
-    { id: 4, name: "mengo" },
-    { id: 5, name: "kero" },
-  ]);
-
-  const [teacherMessage, setTeacherMessage] = useState([
-    {
-      id: 1,
-      text: "Hello, how can I help?",
-      sender: "teacher name",
-    },
-  ]);
-
+  const [messages, setMessages] = useState<messageType[]>([]);
+  const [participants, setParticipants] = useState<Participant[]>([]);
   const [inputMessage, setInputMessage] = useState("");
+
+  const sessionId = localStorage.getItem("sessionId");
+  const userId = localStorage.getItem("userId");
+  const role = localStorage.getItem("role");
+
+  // Listen for new messages
+  useSocketEvent<ChatMessage>(SOCKET_EVENTS.NEW_MESSAGE, (data) => {
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: Date.now(),
+        text: data.message,
+        sender: data.senderName,
+        senderRole: data.senderRole,
+      },
+    ]);
+  });
+
+  // Listen for participant updates
+  useSocketEvent<{ participants: Participant[] }>(
+    SOCKET_EVENTS.UPDATE_PARTICIPANTS,
+    (data) => {
+      setParticipants(data.participants);
+    }
+  );
+
+  // Listen for when a student joins
+  useSocketEvent<{ userId: string; userName: string }>(
+    SOCKET_EVENTS.STUDENT_JOINED,
+    (data) => {
+      if (accessor === "teacher") {
+        toast.success(`${data.userName} joined the session!`, toastOptions);
+      }
+    }
+  );
+
+  // Listen for when a student is kicked
+  useSocketEvent<{ studentId: string }>(
+    SOCKET_EVENTS.STUDENT_KICKED,
+    (data) => {
+      if (data.studentId === userId) {
+        toast.error("You have been kicked from the session!", toastOptions);
+        setTimeout(() => {
+          localStorage.clear();
+          window.location.href = "/";
+        }, 2000);
+      }
+    }
+  );
 
   const handleChatIconClick = () => {
     setIsOpen(!isOpen);
   };
 
-  const handleKickOut = (id: number) => {
-    setParticipants((prev) => prev.filter((p) => p.id !== id));
-  };
+  const handleKickOut = (studentId: string) => {
+    if (!sessionId) {
+      toast.error("No active session", toastOptions);
+      return;
+    }
 
-  const role = localStorage.getItem("role");
+    // Emit kick event via socket
+    emit(SOCKET_EVENTS.STUDENT_KICKED, {
+      sessionId,
+      studentId,
+    });
+
+    toast.success("Student has been kicked out", toastOptions);
+  };
 
   const handleSendMessage = () => {
     if (!inputMessage.trim()) return;
 
-    if (accessor === "teacher") {
-      setTeacherMessage((prev) => [
-        ...prev,
-        {
-          id: Date.now(),
-          text: inputMessage,
-          sender: "Teacher",
-        },
-      ]);
-    } else {
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: Date.now(),
-          text: inputMessage,
-          sender: "Student",
-        },
-      ]);
+    if (!sessionId || !userId) {
+      toast.error("Session information missing", toastOptions);
+      return;
     }
+
+    // Emit message via socket
+    emit(SOCKET_EVENTS.SEND_MESSAGE, {
+      sessionId,
+      senderId: userId,
+      senderRole: role as "teacher" | "student",
+      message: inputMessage,
+    });
 
     setInputMessage("");
   };
@@ -112,65 +142,102 @@ const ChatBox: React.FC<{ accessor: string }> = ({ accessor }) => {
                   : "text-gray-500 border-b-2 border-transparent"
               }`}
             >
-              Participants
+              Participants ({participants.length})
             </button>
           </div>
 
           {/* Content */}
           <div className="p-4 space-y-4 bg-white flex-1 overflow-y-auto">
-            {activeTab === "chat" && accessor === "teacher" && (
+            {activeTab === "chat" && (
               <>
-                {messages.map((message) => (
-                  <div key={message.id} className="text-left">
-                    <p className="text-sm text-purple-800 font-semibold">
-                      {message.sender}
-                    </p>
-                    <div className="bg-black text-white px-3 py-2 mt-1 rounded-lg w-fit max-w-[70%] mr-auto">
-                      {message.text}
-                    </div>
+                {messages.length === 0 ? (
+                  <div className="text-center text-gray-500 mt-8">
+                    No messages yet. Start the conversation!
                   </div>
-                ))}
-
-                {teacherMessage.map((message) => (
-                  <div key={message.id} className="text-right">
-                    <p className="text-sm text-black font-semibold">
-                      {message.sender}
-                    </p>
-                    <div className="bg-[#8F64E1] text-white px-3 py-2 mt-1 rounded-lg w-fit max-w-[70%] ml-auto">
-                      {message.text}
+                ) : (
+                  messages.map((message) => (
+                    <div
+                      key={message.id}
+                      className={
+                        message.senderRole === role ? "text-right" : "text-left"
+                      }
+                    >
+                      <p
+                        className={`text-sm font-semibold ${
+                          message.senderRole === role
+                            ? "text-black"
+                            : "text-purple-800"
+                        }`}
+                      >
+                        {message.sender}
+                      </p>
+                      <div
+                        className={`px-3 py-2 mt-1 rounded-lg w-fit max-w-[70%] ${
+                          message.senderRole === role
+                            ? "bg-[#8F64E1] text-white ml-auto"
+                            : "bg-black text-white mr-auto"
+                        }`}
+                      >
+                        {message.text}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </>
             )}
 
-            {activeTab === "participants" && accessor === "teacher" && (
+            {activeTab === "participants" && (
               <>
-                <div className="flex justify-between text-[#726F6F] px-3">
-                  <span>Name</span>
-                  <span>Action</span>
-                </div>
-                <div className="text-gray-600">
-                  <ul className="list-disc pl-5">
-                    {participants.map((p) => (
-                      <div key={p.id} className="flex justify-between">
-                        <span className="text-black">{p.name}</span>
-                        {role === "student" && (
-                          <button
-                            onClick={() => handleKickOut(p.id)}
-                            className="text-[#1D68BD] px-3 py-2 mt-1 underline cursor-pointer rounded-lg"
-                          >
-                            kick out
-                          </button>
-                        )}
+                {accessor === "teacher" && (
+                  <>
+                    <div className="flex justify-between text-[#726F6F] px-3">
+                      <span>Name</span>
+                      <span>Action</span>
+                    </div>
+                    <div className="text-gray-600">
+                      {participants.length === 0 ? (
+                        <div className="text-center text-gray-500 mt-8">
+                          No students have joined yet
+                        </div>
+                      ) : (
+                        <ul className="list-disc pl-5">
+                          {participants.map((p) => (
+                            <div key={p.id} className="flex justify-between">
+                              <span className="text-black">{p.name}</span>
+                              <button
+                                onClick={() => handleKickOut(p.id)}
+                                className="text-[#1D68BD] px-3 py-2 mt-1 underline cursor-pointer rounded-lg hover:opacity-80 transition"
+                              >
+                                kick out
+                              </button>
+                            </div>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  </>
+                )}
+                {accessor === "student" && (
+                  <div className="text-gray-600">
+                    {participants.length === 0 ? (
+                      <div className="text-center text-gray-500 mt-8">
+                        No other students in the session
                       </div>
-                    ))}
-                  </ul>
-                </div>
+                    ) : (
+                      <ul className="list-disc pl-5">
+                        {participants.map((p) => (
+                          <li key={p.id} className="text-black">
+                            {p.name}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                )}
               </>
             )}
           </div>
-          
+
           {activeTab === "chat" && (
             <div className="border-t border-gray-300 p-3 flex gap-2">
               <input
@@ -183,7 +250,7 @@ const ChatBox: React.FC<{ accessor: string }> = ({ accessor }) => {
               />
               <button
                 onClick={handleSendMessage}
-                className="bg-[#8F64E1] text-white px-4 rounded-md"
+                className="bg-[#8F64E1] text-white px-4 rounded-md hover:opacity-90 transition"
               >
                 Send
               </button>
