@@ -19,7 +19,7 @@ const TeacherPage:React.FC = () => {
     { value: "", isCorrect: false },
     { value: "", isCorrect: false },
   ]);
-  const [duration, setDuration] = useState("60");
+  const [duration, setDuration] = useState<number>(60);
 
   const sessionId = localStorage.getItem("sessionId");
 
@@ -64,7 +64,7 @@ const TeacherPage:React.FC = () => {
       sessionId,
       text: question,
       options: filledOptions.map(opt => opt.value),
-      timeLimit: parseInt(duration)
+      timeLimit: duration
     });
 
     toast.success("Question sent to all students!", toastOptions);
@@ -102,7 +102,7 @@ const TeacherPage:React.FC = () => {
             <div className="relative w-fit">
               <select
                 value={duration}
-                onChange={(e) => setDuration(e.target.value)}
+                onChange={(e) => setDuration(parseInt(e.target.value))}
                 className="border cursor-pointer rounded px-6 py-2 text-sm focus:outline-none bg-[#F2F2F2] appearance-none"
               >
                 <option value="30">30 seconds</option>

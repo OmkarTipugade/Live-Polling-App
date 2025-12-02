@@ -1,10 +1,17 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
+import { useSocketEmit } from "../hooks/useSocketEvent";
+import { SOCKET_EVENTS } from "../utils/socketEvents";
+import { api } from "../utils/api";
+import { toast } from "react-toastify";
+import toastOptions from "../utils/ToastOptions";
 import BadgeStar from "../components/BadgeStar";
 
 const LandingPage: React.FC = () => {
   const [selectedRole, setSelectedRole] = useState<string>("student");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { emit } = useSocketEmit();
 
   const roleOptions = [
     {
@@ -20,6 +27,45 @@ const LandingPage: React.FC = () => {
         "Create engaging polls, receive student responses live, and visualize results instantly.",
     },
   ];
+
+  const handleContinue = async () => {
+    setLoading(true);
+    localStorage.setItem("role", selectedRole);
+
+    try {
+      if (selectedRole === "teacher") {
+        // Create session for teacher
+        const { session, teacher } = await api.createSession("Teacher");
+
+        // Store session and teacher info
+        localStorage.setItem("sessionId", session._id);
+        localStorage.setItem("userId", teacher._id);
+        localStorage.setItem("userName", "Teacher");
+
+        // Join session via socket
+        emit(SOCKET_EVENTS.JOIN_SESSION, {
+          sessionId: session._id,
+          userId: teacher._id,
+          userName: "Teacher",
+          role: "teacher",
+        });
+
+        toast.success(
+          `Session created! Code: ${session._id.slice(-6).toUpperCase()}`,
+          toastOptions
+        );
+        navigate("/teacher");
+      } else {
+        // Student goes to join page
+        navigate("/student");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      toast.error("Failed to create session. Please try again.", toastOptions);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <main className="bg-white flex flex-col items-center justify-center min-h-screen px-4 relative">
@@ -60,13 +106,11 @@ const LandingPage: React.FC = () => {
       </div>
 
       <button
-        onClick={() => {
-          localStorage.setItem("role", selectedRole);
-          navigate(`/${selectedRole}`);
-        }}
-        className="mt-10 sm:mt-14 w-full max-w-[234px] h-[52px] sm:h-[58px] rounded-full bg-linear-to-r from-[#8F64E1] to-[#1D68BD] text-base sm:text-lg font-semibold text-white hover:opacity-90 transition sora"
+        onClick={handleContinue}
+        disabled={loading}
+        className="mt-10 sm:mt-14 w-full max-w-[234px] h-[52px] sm:h-[58px] rounded-full bg-linear-to-r from-[#8F64E1] to-[#1D68BD] text-base sm:text-lg font-semibold text-white hover:opacity-90 transition sora disabled:opacity-50"
       >
-        Continue
+        {loading ? "Loading..." : "Continue"}
       </button>
     </main>
   );

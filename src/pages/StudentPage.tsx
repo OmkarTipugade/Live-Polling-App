@@ -25,16 +25,13 @@ const StudentPage: React.FC = () => {
       return;
     }
 
-    // Generate unique user ID
-    const userId = `student_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const userId = `student_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
 
-    // Store user info in localStorage
     localStorage.setItem("userId", userId);
     localStorage.setItem("userName", name);
     localStorage.setItem("sessionId", sessionCode);
     localStorage.setItem("role", "student");
 
-    // Join session via socket
     emit(SOCKET_EVENTS.JOIN_SESSION, {
       sessionId: sessionCode,
       userId,
@@ -44,7 +41,6 @@ const StudentPage: React.FC = () => {
 
     toast.success(`Welcome, ${name}!`, toastOptions);
 
-    // Navigate to question page
     setTimeout(() => {
       navigate("/student/que");
     }, 1000);

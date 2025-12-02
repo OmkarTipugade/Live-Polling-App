@@ -1,12 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { useSocketEvent, useSocketEmit } from "../hooks/useSocketEvent";
-import { SOCKET_EVENTS, type QuestionData, type ResultsData } from "../utils/socketEvents";
+import {
+  SOCKET_EVENTS,
+  type QuestionData,
+  type ResultsData,
+} from "../utils/socketEvents";
 import { toast } from "react-toastify";
 import toastOptions from "../utils/ToastOptions";
 import clock from "../assets/clock.png";
 import PollOption from "../components/PollOption";
 
-const StudentQuePage:React.FC = () => {
+const StudentQuePage: React.FC = () => {
   const { emit } = useSocketEmit();
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [question, setQuestion] = useState<QuestionData | null>(null);
@@ -18,7 +22,6 @@ const StudentQuePage:React.FC = () => {
   // Get session and user info from localStorage
   const sessionId = localStorage.getItem("sessionId");
   const studentId = localStorage.getItem("userId");
-  const studentName = localStorage.getItem("userName");
 
   // Listen for new questions
   useSocketEvent<{ question: QuestionData }>(
@@ -35,32 +38,23 @@ const StudentQuePage:React.FC = () => {
   );
 
   // Listen for results
-  useSocketEvent<ResultsData>(
-    SOCKET_EVENTS.SHOW_RESULTS,
-    (data) => {
-      setResults(data.results);
-      setShowResults(true);
-      setSubmitted(true);
-    }
-  );
+  useSocketEvent<ResultsData>(SOCKET_EVENTS.SHOW_RESULTS, (data) => {
+    setResults(data.results);
+    setShowResults(true);
+    setSubmitted(true);
+  });
 
   // Listen for real-time result updates
-  useSocketEvent<ResultsData>(
-    SOCKET_EVENTS.UPDATE_RESULTS,
-    (data) => {
-      if (showResults) {
-        setResults(data.results);
-      }
+  useSocketEvent<ResultsData>(SOCKET_EVENTS.UPDATE_RESULTS, (data) => {
+    if (showResults) {
+      setResults(data.results);
     }
-  );
+  });
 
   // Listen for errors
-  useSocketEvent<{ message: string }>(
-    SOCKET_EVENTS.ERROR,
-    (data) => {
-      toast.error(data.message, toastOptions);
-    }
-  );
+  useSocketEvent<{ message: string }>(SOCKET_EVENTS.ERROR, (data) => {
+    toast.error(data.message, toastOptions);
+  });
 
   // Timer countdown
   useEffect(() => {
@@ -86,7 +80,7 @@ const StudentQuePage:React.FC = () => {
       questionId: question.id,
       studentId,
       selectedOption,
-      sessionId
+      sessionId,
     });
 
     setSubmitted(true);
@@ -103,15 +97,16 @@ const StudentQuePage:React.FC = () => {
     );
   }
 
-  const totalVotes = Object.values(results).reduce((sum, votes) => sum + votes, 0);
+  const totalVotes = Object.values(results).reduce(
+    (sum, votes) => sum + votes,
+    0
+  );
 
   return (
     <div className="min-h-screen bg-white relative px-4 py-10 sora">
       <div className="max-w-xl w-full mx-auto pt-14">
         <div className="flex justify-start items-center gap-9">
-          <div className="text-black font-semibold text-xl mb-5">
-            Question
-          </div>
+          <div className="text-black font-semibold text-xl mb-5">Question</div>
           <div className="flex space-x-2 items-center mb-5">
             <img src={clock} className="h-5 w-5" alt="clock" />
             <div className="text-red-500 font-medium">
@@ -148,7 +143,7 @@ const StudentQuePage:React.FC = () => {
                       id: index + 1,
                       text: option,
                       votes: results[option] || 0,
-                      totalVotes
+                      totalVotes,
                     }}
                   />
                 ) : (

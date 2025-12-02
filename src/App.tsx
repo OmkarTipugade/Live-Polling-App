@@ -3,11 +3,11 @@ import { Routes, Route } from "react-router"
 import TeacherPage from "./pages/TeacherPage"
 import StudentPage from "./pages/StudentPage"
 import ChatBox from "./pages/ChatBox"
-import TeacherQuePage from "./pages/TeacherQuePage"
 import ProtectedRoute from "./components/ProtectedRoute"
 import UnauthorizedPage from "./pages/UnauthorizedPage"
 import { useLocation } from "react-router"
 import StudentQuePage from "./pages/StudentQuePage"
+import AskQuestion from "./pages/AskQuestion"
 const App = () => {
 
   const location = useLocation()
@@ -46,7 +46,7 @@ const App = () => {
             path="/teacher/que" 
             element={
               <ProtectedRoute allowedRoles={["teacher"]}>
-                <TeacherQuePage />
+                <AskQuestion />
               </ProtectedRoute>
             } 
           />
