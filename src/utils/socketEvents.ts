@@ -97,6 +97,7 @@ export interface ResultsData {
 export interface Participant {
     id: string;
     name: string;
+    role: "teacher" | "student";
 }
 
 export interface ChatMessage {

@@ -9,6 +9,7 @@ import { useLocation } from "react-router";
 import StudentQuePage from "./pages/StudentQuePage";
 import AskQuestion from "./pages/AskQuestion";
 import PollHistory from "./pages/PollHistory";
+import KickOut from "./pages/KickOut";
 
 const App = () => {
   const location = useLocation();
@@ -20,6 +21,7 @@ const App = () => {
     <div>
       <Routes>
         <Route path="/" element={<LandingPage />} />
+        <Route path="/kicked" element={<KickOut />} />
         <Route
           path="/student"
           element={

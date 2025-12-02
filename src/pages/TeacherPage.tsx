@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
 import { useSocketEmit } from "../hooks/useSocketEvent";
 import { SOCKET_EVENTS } from "../utils/socketEvents";
@@ -23,6 +23,24 @@ const TeacherPage: React.FC = () => {
   const [duration, setDuration] = useState<number>(60);
 
   const sessionId = sessionStorage.getItem("sessionId");
+  const userId = sessionStorage.getItem("userId");
+  const userName = sessionStorage.getItem("userName");
+
+  const hasJoined = useRef(false);
+
+  // Join session when component mounts to ensure teacher is in socket room
+  useEffect(() => {
+    if (sessionId && userId && userName && !hasJoined.current) {
+      emit(SOCKET_EVENTS.JOIN_SESSION, {
+        sessionId,
+        userId,
+        userName,
+        role: "teacher",
+      });
+      hasJoined.current = true;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionId, userId, userName]); // Removed emit from dependencies
 
   const handleOptionChange = (index: number, newValue: string) => {
     const updated = [...options];
@@ -43,7 +61,6 @@ const TeacherPage: React.FC = () => {
   };
 
   const handleAskQuestion = () => {
-    // Validation
     if (!question.trim()) {
       toast.error("Please enter a question", toastOptions);
       return;

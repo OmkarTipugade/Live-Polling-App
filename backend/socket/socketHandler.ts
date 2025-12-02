@@ -27,6 +27,7 @@ export const setupSocketHandlers = (io: Server) => {
                 
                 socket.data.sessionId = sessionId;
                 socket.data.userId = userId;
+                socket.data.userName = userName; // Store userName for later use
                 socket.data.role = role;
 
                 console.log(`${role} ${userName} joined session ${sessionId}`);
@@ -46,43 +47,21 @@ export const setupSocketHandlers = (io: Server) => {
                         });
                     }
 
-                    // Send current participants list to the room
+                    // Send current participants list to the room (teacher + students)
                     const participants = await User.find({
-                        pollSessionId: sessionId,
-                        role: "student"
+                        pollSessionId: sessionId
                     });
 
                     io.to(sessionId).emit(SOCKET_EVENTS.UPDATE_PARTICIPANTS, {
                         participants: participants.map(p => ({
                             id: p._id,
-                            name: p.name
+                            name: p.name,
+                            role: p.role
                         }))
                     });
 
-                    // If there's a current question, send it to the newly joined student
-                    if (session.currentQuestionId && role === "student") {
-                        const currentQuestion = session.currentQuestionId as any;
-                        
-                        // Check if the question is still active
-                        if (currentQuestion.isActive) {
-                            // Find question number (position in questions array)
-                            const questionIndex = session.questions.findIndex(
-                                (qId) => qId.toString() === currentQuestion._id.toString()
-                            );
-                            const questionNumber = questionIndex >= 0 ? questionIndex + 1 : undefined;
-                            
-                            socket.emit(SOCKET_EVENTS.QUESTION_ASKED, {
-                                question: {
-                                    id: currentQuestion._id,
-                                    text: currentQuestion.text,
-                                    options: currentQuestion.options,
-                                    timeLimit: currentQuestion.timeLimit,
-                                    startTime: currentQuestion.startTime,
-                                    questionNumber
-                                }
-                            });
-                        }
-                    }
+                    // Late-joining students will NOT receive the current active question
+                    // They will only see the next question that the teacher asks
                 }
             } catch (error) {
                 console.error("Error in JOIN_SESSION:", error);
@@ -305,6 +284,9 @@ export const setupSocketHandlers = (io: Server) => {
             try {
                 const { sessionId, senderId, senderRole, message } = data;
 
+                // Get sender name from socket data (set during JOIN_SESSION)
+                const senderName = socket.data.userName || "Unknown";
+
                 // Create message in database
                 const newMessage = await Message.create({
                     pollSessionId: sessionId,
@@ -313,14 +295,11 @@ export const setupSocketHandlers = (io: Server) => {
                     message
                 });
 
-                // Get sender info
-                const sender = await User.findById(senderId);
-
                 // Broadcast message to all in session
                 io.to(sessionId).emit(SOCKET_EVENTS.NEW_MESSAGE, {
                     messageId: newMessage._id,
                     senderId,
-                    senderName: sender?.name || "Unknown",
+                    senderName,
                     senderRole,
                     message,
                     timestamp: newMessage.createdAt
@@ -337,6 +316,14 @@ export const setupSocketHandlers = (io: Server) => {
             try {
                 const { sessionId, studentId } = data;
 
+                // VALIDATE: Only teachers can kick students
+                if (socket.data.role !== "teacher") {
+                    socket.emit(SOCKET_EVENTS.ERROR, { 
+                        message: "Only teachers can kick students" 
+                    });
+                    return;
+                }
+
                 // Remove student from session
                 const session = await PollSession.findById(sessionId);
                 if (session) {
@@ -347,21 +334,36 @@ export const setupSocketHandlers = (io: Server) => {
                 // Delete student user
                 await User.findByIdAndDelete(studentId);
 
-                // Notify all clients in session
-                io.to(sessionId).emit(SOCKET_EVENTS.STUDENT_KICKED, {
-                    studentId
+                // Find and disconnect the kicked student's socket
+                const sockets = await io.in(sessionId).fetchSockets();
+                const kickedSocket = sockets.find(s => s.data.userId === studentId);
+
+                if (kickedSocket) {
+                    // Notify the kicked student specifically
+                    kickedSocket.emit(SOCKET_EVENTS.STUDENT_KICKED, {
+                        studentId,
+                        message: "You have been removed from the session"
+                    });
+                    // Disconnect them
+                    kickedSocket.disconnect(true);
+                }
+
+                // Notify others that student left
+                io.to(sessionId).emit(SOCKET_EVENTS.STUDENT_LEFT, {
+                    userId: studentId,
+                    timestamp: new Date()
                 });
 
-                // Update participants list
+                // Update participants list (include teacher + students)
                 const participants = await User.find({
-                    pollSessionId: sessionId,
-                    role: "student"
+                    pollSessionId: sessionId
                 });
 
                 io.to(sessionId).emit(SOCKET_EVENTS.UPDATE_PARTICIPANTS, {
                     participants: participants.map(p => ({
                         id: p._id,
-                        name: p.name
+                        name: p.name,
+                        role: p.role
                     }))
                 });
 

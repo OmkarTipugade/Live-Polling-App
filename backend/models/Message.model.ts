@@ -2,7 +2,7 @@ import { Schema, model, Document, Types } from "mongoose";
 
 export interface IMessage extends Document {
   pollSessionId: Types.ObjectId;
-  senderId: Types.ObjectId;
+  senderId: string; // Changed from ObjectId to accept string IDs from students
   senderRole: "teacher" | "student";
   message: string;
   createdAt: Date;
@@ -19,8 +19,7 @@ const MessageSchema = new Schema<IMessage>(
     },
 
     senderId: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
+      type: String, // Changed from ObjectId to accept string IDs
       required: true,
     },
 

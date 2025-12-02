@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useSocketEvent, useSocketEmit } from "../hooks/useSocketEvent";
 import {
   SOCKET_EVENTS,
@@ -24,6 +24,23 @@ const StudentQuePage: React.FC = () => {
 
   const sessionId = sessionStorage.getItem("sessionId");
   const studentId = sessionStorage.getItem("userId");
+  const userName = sessionStorage.getItem("userName");
+
+  const hasJoined = useRef(false);
+
+  // Re-join session when component mounts to ensure student is in socket room
+  useEffect(() => {
+    if (sessionId && studentId && userName && !hasJoined.current) {
+      emit(SOCKET_EVENTS.JOIN_SESSION, {
+        sessionId,
+        userId: studentId,
+        userName,
+        role: "student",
+      });
+      hasJoined.current = true;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionId, studentId, userName]); // Removed emit from dependencies
 
   // Listen for new questions
   useSocketEvent<{ question: QuestionData }>(
@@ -70,6 +87,24 @@ const StudentQuePage: React.FC = () => {
   useSocketEvent<{ message: string }>(SOCKET_EVENTS.ERROR, (data) => {
     toast.error(data.message, toastOptions);
   });
+
+  // Listen for being kicked
+  useSocketEvent<{ studentId: string; message?: string }>(
+    SOCKET_EVENTS.STUDENT_KICKED,
+    (data) => {
+      if (data.studentId === studentId) {
+        toast.error(
+          data.message || "You have been removed from the session",
+          toastOptions
+        );
+        // Redirect to kick-out page after a short delay
+        setTimeout(() => {
+          sessionStorage.clear();
+          window.location.href = "/kicked";
+        }, 1500);
+      }
+    }
+  );
 
   // Timer countdown
   useEffect(() => {

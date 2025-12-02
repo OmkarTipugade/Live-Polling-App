@@ -49,6 +49,24 @@ const ChatBox: React.FC<{ accessor: string }> = ({ accessor }) => {
     }
   );
 
+  // Listen for being kicked (students only)
+  useSocketEvent<{ studentId: string; message?: string }>(
+    SOCKET_EVENTS.STUDENT_KICKED,
+    (data) => {
+      if (data.studentId === userId && role === "student") {
+        toast.error(
+          data.message || "You have been removed from the session",
+          toastOptions
+        );
+        // Redirect to kick-out page after a short delay
+        setTimeout(() => {
+          sessionStorage.clear();
+          window.location.href = "/kicked";
+        }, 1500);
+      }
+    }
+  );
+
   const handleChatIconClick = () => {
     setIsOpen(!isOpen);
   };
@@ -116,7 +134,8 @@ const ChatBox: React.FC<{ accessor: string }> = ({ accessor }) => {
                   : "text-gray-500 border-b-2 border-transparent"
               }`}
             >
-              Participants ({participants.length})
+              Participants (
+              {participants.filter((p) => p.role === "student").length})
             </button>
           </div>
 
@@ -133,21 +152,23 @@ const ChatBox: React.FC<{ accessor: string }> = ({ accessor }) => {
                     <div
                       key={message.id}
                       className={
-                        message.senderRole === role ? "text-right" : "text-left"
+                        message.senderRole === "teacher"
+                          ? "text-right"
+                          : "text-left"
                       }
                     >
                       <p
                         className={`text-sm font-semibold ${
-                          message.senderRole === role
-                            ? "text-black"
-                            : "text-purple-800"
+                          message.senderRole === "teacher"
+                            ? "text-purple-800"
+                            : "text-black"
                         }`}
                       >
                         {message.sender}
                       </p>
                       <div
                         className={`px-3 py-2 mt-1 rounded-lg w-fit max-w-[70%] ${
-                          message.senderRole === role
+                          message.senderRole === "teacher"
                             ? "bg-[#8F64E1] text-white ml-auto"
                             : "bg-black text-white mr-auto"
                         }`}
@@ -169,23 +190,26 @@ const ChatBox: React.FC<{ accessor: string }> = ({ accessor }) => {
                       <span>Action</span>
                     </div>
                     <div className="text-gray-600">
-                      {participants.length === 0 ? (
+                      {participants.filter((p) => p.role === "student")
+                        .length === 0 ? (
                         <div className="text-center text-gray-500 mt-8">
                           No students have joined yet
                         </div>
                       ) : (
                         <ul className="list-disc pl-5">
-                          {participants.map((p) => (
-                            <div key={p.id} className="flex justify-between">
-                              <span className="text-black">{p.name}</span>
-                              <button
-                                onClick={() => handleKickOut(p.id)}
-                                className="text-[#1D68BD] px-3 py-2 mt-1 underline cursor-pointer rounded-lg hover:opacity-80 transition"
-                              >
-                                kick out
-                              </button>
-                            </div>
-                          ))}
+                          {participants
+                            .filter((p) => p.role === "student")
+                            .map((p) => (
+                              <div key={p.id} className="flex justify-between">
+                                <span className="text-black">{p.name}</span>
+                                <button
+                                  onClick={() => handleKickOut(p.id)}
+                                  className="text-[#1D68BD] px-3 py-2 mt-1 underline cursor-pointer rounded-lg hover:opacity-80 transition"
+                                >
+                                  kick out
+                                </button>
+                              </div>
+                            ))}
                         </ul>
                       )}
                     </div>
@@ -193,17 +217,20 @@ const ChatBox: React.FC<{ accessor: string }> = ({ accessor }) => {
                 )}
                 {accessor === "student" && (
                   <div className="text-gray-600">
-                    {participants.length === 0 ? (
+                    {participants.filter((p) => p.role === "student").length ===
+                    0 ? (
                       <div className="text-center text-gray-500 mt-8">
-                        No other students in the session
+                        No students in the session
                       </div>
                     ) : (
                       <ul className="list-disc pl-5">
-                        {participants.map((p) => (
-                          <li key={p.id} className="text-black">
-                            {p.name}
-                          </li>
-                        ))}
+                        {participants
+                          .filter((p) => p.role === "student")
+                          .map((p) => (
+                            <li key={p.id} className="text-black">
+                              {p.name} {p.id === userId && "(You)"}
+                            </li>
+                          ))}
                       </ul>
                     )}
                   </div>
@@ -212,24 +239,23 @@ const ChatBox: React.FC<{ accessor: string }> = ({ accessor }) => {
             )}
           </div>
 
-          {activeTab === "chat" && (
-            <div className="border-t border-gray-300 p-3 flex gap-2">
-              <input
-                type="text"
-                className="flex-1 border px-3 py-2 rounded-md focus:outline-none"
-                placeholder="Type a message..."
-                value={inputMessage}
-                onChange={(e) => setInputMessage(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
-              />
-              <button
-                onClick={handleSendMessage}
-                className="bg-[#8F64E1] text-white px-4 rounded-md hover:opacity-90 transition"
-              >
-                Send
-              </button>
-            </div>
-          )}
+          {/* Chat input - always show for both tabs */}
+          <div className="border-t border-gray-300 p-3 flex gap-2">
+            <input
+              type="text"
+              className="flex-1 border px-3 py-2 rounded-md focus:outline-none"
+              placeholder="Type a message..."
+              value={inputMessage}
+              onChange={(e) => setInputMessage(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
+            />
+            <button
+              onClick={handleSendMessage}
+              className="bg-[#8F64E1] text-white px-4 rounded-md hover:opacity-90 transition"
+            >
+              Send
+            </button>
+          </div>
         </div>
       )}
     </>
