@@ -9,6 +9,8 @@ import { toast } from "react-toastify";
 import toastOptions from "../utils/ToastOptions";
 import clock from "../assets/clock.png";
 import PollOption from "../components/PollOption";
+import { RiLoader4Fill } from "react-icons/ri";
+import BadgeStar from "../components/BadgeStar";
 
 const StudentQuePage: React.FC = () => {
   const { emit } = useSocketEmit();
@@ -89,9 +91,11 @@ const StudentQuePage: React.FC = () => {
 
   if (!question) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center px-4 sora">
-        <p className="text-lg text-gray-600">
-          Waiting for the teacher to ask a question...
+      <div className="flex flex-col items-center justify-center gap-3 min-h-screen bg-white px-4 sora">
+        <BadgeStar />
+        <RiLoader4Fill className="animate-spin text-[#8F64E1] h-8 w-8" />
+        <p className="text-black text-lg font-medium text-center">
+          Wait for the teacher to ask a new question...
         </p>
       </div>
     );
@@ -195,13 +199,8 @@ const StudentQuePage: React.FC = () => {
         </div>
         {submitted && !showResults && (
           <div className="flex justify-center items-center mt-8">
-            <span className="text-black text-lg font-medium text-center">
-              Waiting for other students to answer...
-            </span>
-          </div>
-        )}
-        {showResults && (
-          <div className="flex justify-center items-center mt-8">
+            <BadgeStar />
+            <RiLoader4Fill className="animate-spin text-[#8F64E1] h-6 w-6" />
             <span className="text-black text-lg font-medium text-center">
               Wait for the teacher to ask a new question...
             </span>

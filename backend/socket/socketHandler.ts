@@ -59,11 +59,22 @@ export const setupSocketHandlers = (io: Server) => {
                         }))
                     });
 
-                    // If there's a current question, send it to the new student
+                    // If there's a current question, send it to the newly joined student
                     if (session.currentQuestionId && role === "student") {
-                        socket.emit(SOCKET_EVENTS.QUESTION_ASKED, {
-                            question: session.currentQuestionId
-                        });
+                        const currentQuestion = session.currentQuestionId as any;
+                        
+                        // Check if the question is still active
+                        if (currentQuestion.isActive) {
+                            socket.emit(SOCKET_EVENTS.QUESTION_ASKED, {
+                                question: {
+                                    id: currentQuestion._id,
+                                    text: currentQuestion.text,
+                                    options: currentQuestion.options,
+                                    timeLimit: currentQuestion.timeLimit,
+                                    startTime: currentQuestion.startTime
+                                }
+                            });
+                        }
                     }
                 }
             } catch (error) {

@@ -5,6 +5,7 @@ import { SOCKET_EVENTS } from "../utils/socketEvents";
 import { toast } from "react-toastify";
 import toastOptions from "../utils/ToastOptions";
 import { FaCaretDown } from "react-icons/fa";
+import { FaCopy } from "react-icons/fa6";
 import BadgeStar from "../components/BadgeStar";
 
 interface optionType {
@@ -69,18 +70,45 @@ const TeacherPage: React.FC = () => {
 
     toast.success("Question sent to all students!", toastOptions);
 
-    // Navigate to results page immediately
-    // The AskQuestion component will receive the question via socket event
-    navigate("/teacher/que");
+    setTimeout(() => {
+      navigate("/teacher/que");
+    }, 500);
+  };
+
+  const handleCopySessionCode = () => {
+    if (sessionId) {
+      navigator.clipboard.writeText(sessionId);
+      toast.success("Session code copied to clipboard!", toastOptions);
+    }
   };
 
   return (
     <div className="min-h-screen bg-white px-4 py-10 flex flex-col items-center sora">
       <div className="w-full max-w-3xl">
-        <div className="mb-6 text-left">
+        <div className="mb-6 text-left flex justify-between items-center">
           <div className="flex items-center rounded-full w-fit">
             <BadgeStar />
           </div>
+
+          {sessionId && (
+            <div className="flex items-center gap-3 bg-linear-to-r from-[#8F64E1] to-[#1D68BD] px-5 py-2.5 rounded-full shadow-md">
+              <div className="flex flex-col">
+                <span className="text-white text-xs font-medium opacity-90">
+                  Session Code
+                </span>
+                <span className="text-white text-lg font-bold tracking-wider">
+                  {sessionId.slice(-6).toUpperCase()}
+                </span>
+              </div>
+              <button
+                onClick={handleCopySessionCode}
+                className="bg-opacity-20 hover:bg-opacity-30 transition p-2 rounded-lg cursor-pointer"
+                title="Copy session code"
+              >
+                <FaCopy className="text-white h-5 w-5" />
+              </button>
+            </div>
+          )}
         </div>
 
         <div className="text-left mb-10">

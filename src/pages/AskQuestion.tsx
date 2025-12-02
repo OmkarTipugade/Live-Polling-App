@@ -8,6 +8,7 @@ import {
 } from "../utils/socketEvents";
 import PollOption from "../components/PollOption";
 import { IoEyeSharp } from "react-icons/io5";
+import { FaCopy } from "react-icons/fa6";
 import { toast } from "react-toastify";
 import toastOptions from "../utils/ToastOptions";
 import { api } from "../utils/api";
@@ -112,6 +113,13 @@ const AskQuestion: React.FC = () => {
     toast.info("Poll history feature coming soon!", toastOptions);
   };
 
+  const handleCopySessionCode = () => {
+    if (sessionId) {
+      navigator.clipboard.writeText(sessionId);
+      toast.success("Session code copied to clipboard!", toastOptions);
+    }
+  };
+
   // Calculate poll data for display
   const pollData: OptionType[] = question
     ? question.options.map((opt, index) => ({
@@ -154,7 +162,26 @@ const AskQuestion: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-white relative px-4 py-10 sora">
-      <div className="absolute top-6 right-6 z-10">
+      <div className="absolute top-6 right-6 z-10 flex items-center gap-3">
+        {sessionId && (
+          <div className="flex items-center gap-2 bg-linear-to-r from-[#8F64E1] to-[#1D68BD] px-4 py-2 rounded-full shadow-md">
+            <div className="flex flex-col">
+              <span className="text-white text-xs font-medium opacity-90">
+                Session Code
+              </span>
+              <span className="text-white text-sm font-bold tracking-wider">
+                {sessionId.slice(-6).toUpperCase()}
+              </span>
+            </div>
+            <button
+              onClick={handleCopySessionCode}
+              className=" bg-opacity-20 hover:bg-opacity-30 transition p-1.5 rounded-lg cursor-pointer"
+              title="Copy session code"
+            >
+              <FaCopy className="text-white h-4 w-4" />
+            </button>
+          </div>
+        )}
         <button
           onClick={handleViewHistory}
           className="flex items-center gap-2 cursor-pointer bg-[#8F64E1] text-white text-sm font-medium px-5 py-2 rounded-full shadow hover:opacity-90 transition"
