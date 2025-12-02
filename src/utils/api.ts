@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const BACKEND_URL = "https://live-polling-app-1-m2q3.onrender.com/";
+const BACKEND_URL = "https://live-polling-app-1-m2q3.onrender.com";
 
 const axiosInstance = axios.create({
     baseURL: BACKEND_URL,
