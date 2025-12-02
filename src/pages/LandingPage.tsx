@@ -30,17 +30,18 @@ const LandingPage: React.FC = () => {
 
   const handleContinue = async () => {
     setLoading(true);
-    localStorage.setItem("role", selectedRole);
+    // Use sessionStorage instead of localStorage to prevent tab conflicts
+    sessionStorage.setItem("role", selectedRole);
 
     try {
       if (selectedRole === "teacher") {
         // Create session for teacher
         const { session, teacher } = await api.createSession("Teacher");
 
-        // Store session and teacher info
-        localStorage.setItem("sessionId", session._id);
-        localStorage.setItem("userId", teacher._id);
-        localStorage.setItem("userName", "Teacher");
+        // Store session and teacher info in sessionStorage
+        sessionStorage.setItem("sessionId", session._id);
+        sessionStorage.setItem("userId", teacher._id);
+        sessionStorage.setItem("userName", "Teacher");
 
         // Join session via socket
         emit(SOCKET_EVENTS.JOIN_SESSION, {

@@ -20,10 +20,11 @@ const StudentQuePage: React.FC = () => {
   const [submitted, setSubmitted] = useState(false);
   const [results, setResults] = useState<Record<string, number>>({});
   const [showResults, setShowResults] = useState(false);
+  const [isInitialWait, setIsInitialWait] = useState(true); // Track if waiting for first question
 
-  // Get session and user info from localStorage
-  const sessionId = localStorage.getItem("sessionId");
-  const studentId = localStorage.getItem("userId");
+  // Get session and user info from sessionStorage
+  const sessionId = sessionStorage.getItem("sessionId");
+  const studentId = sessionStorage.getItem("userId");
 
   // Listen for new questions
   useSocketEvent<{ question: QuestionData }>(
@@ -35,6 +36,7 @@ const StudentQuePage: React.FC = () => {
       setShowResults(false);
       setSelectedOption(null);
       setResults({});
+      setIsInitialWait(false); // No longer initial wait after first question
       toast.info("New question received!", toastOptions);
     }
   );
@@ -103,8 +105,12 @@ const StudentQuePage: React.FC = () => {
   if (!question) {
     return (
       <div className="flex flex-col items-center justify-center gap-3 min-h-screen bg-white px-4 sora">
-        <BadgeStar />
-        <RiLoader4Fill className="animate-spin text-[#8F64E1] h-8 w-8" />
+        {isInitialWait && (
+          <>
+            <BadgeStar />
+            <RiLoader4Fill className="animate-spin text-[#8F64E1] h-8 w-8" />
+          </>
+        )}
         <p className="text-black text-lg font-medium text-center">
           Wait for the teacher to ask a new question...
         </p>

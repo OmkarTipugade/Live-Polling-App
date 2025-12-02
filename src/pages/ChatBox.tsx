@@ -24,9 +24,9 @@ const ChatBox: React.FC<{ accessor: string }> = ({ accessor }) => {
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [inputMessage, setInputMessage] = useState("");
 
-  const sessionId = localStorage.getItem("sessionId");
-  const userId = localStorage.getItem("userId");
-  const role = localStorage.getItem("role");
+  const sessionId = sessionStorage.getItem("sessionId");
+  const userId = sessionStorage.getItem("userId");
+  const role = sessionStorage.getItem("role");
 
   // Listen for new messages
   useSocketEvent<ChatMessage>(SOCKET_EVENTS.NEW_MESSAGE, (data) => {
@@ -49,8 +49,6 @@ const ChatBox: React.FC<{ accessor: string }> = ({ accessor }) => {
     }
   );
 
-
-
   const handleChatIconClick = () => {
     setIsOpen(!isOpen);
   };
@@ -66,7 +64,6 @@ const ChatBox: React.FC<{ accessor: string }> = ({ accessor }) => {
       sessionId,
       studentId,
     });
-
   };
 
   const handleSendMessage = () => {

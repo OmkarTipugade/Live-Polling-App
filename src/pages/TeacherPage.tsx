@@ -22,7 +22,7 @@ const TeacherPage: React.FC = () => {
   ]);
   const [duration, setDuration] = useState<number>(60);
 
-  const sessionId = localStorage.getItem("sessionId");
+  const sessionId = sessionStorage.getItem("sessionId");
 
   const handleOptionChange = (index: number, newValue: string) => {
     const updated = [...options];
@@ -67,7 +67,6 @@ const TeacherPage: React.FC = () => {
       options: filledOptions.map((opt) => opt.value),
       timeLimit: duration,
     });
-
 
     setTimeout(() => {
       navigate("/teacher/que");

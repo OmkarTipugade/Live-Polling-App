@@ -10,7 +10,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children,
   allowedRoles,
 }) => {
-  const userRole = localStorage.getItem("role");
+  const userRole = sessionStorage.getItem("role");
 
   // If no role is set, redirect to landing page
   if (!userRole) {

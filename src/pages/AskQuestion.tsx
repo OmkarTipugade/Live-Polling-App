@@ -29,7 +29,7 @@ const AskQuestion: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [timer, setTimer] = useState(0);
 
-  const sessionId = localStorage.getItem("sessionId");
+  const sessionId = sessionStorage.getItem("sessionId");
 
   // Fetch current question on mount
   useEffect(() => {

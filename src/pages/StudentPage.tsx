@@ -25,18 +25,21 @@ const StudentPage: React.FC = () => {
       return;
     }
 
-    const userId = `student_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+    const userId = `student_${Date.now()}_${Math.random()
+      .toString(36)
+      .substring(2, 9)}`;
 
-    localStorage.setItem("userId", userId);
-    localStorage.setItem("userName", name);
-    localStorage.setItem("sessionId", sessionCode);
-    localStorage.setItem("role", "student");
+    // Use sessionStorage to prevent conflicts with other tabs
+    sessionStorage.setItem("userId", userId);
+    sessionStorage.setItem("userName", name);
+    sessionStorage.setItem("sessionId", sessionCode);
+    sessionStorage.setItem("role", "student");
 
     emit(SOCKET_EVENTS.JOIN_SESSION, {
       sessionId: sessionCode,
       userId,
       userName: name,
-      role: "student"
+      role: "student",
     });
 
     toast.success(`Welcome, ${name}!`, toastOptions);
