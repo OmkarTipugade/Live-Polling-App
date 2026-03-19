@@ -297,6 +297,44 @@ mongosh
 - Check if backend MongoDB connection is active
 - Review browser console for errors
 
+## 📄 Resume Summary
+
+Use the content below as a reference when adding this project to your resume or portfolio.
+
+### One-Line Description
+
+> Built a full-stack real-time live polling web application enabling teachers to broadcast questions and receive instant, live-updated responses from students using WebSockets.
+
+### Resume Bullet Points
+
+- **Architected** a full-stack real-time polling platform using **React 19**, **TypeScript**, **Node.js/Express**, and **Socket.IO**, supporting simultaneous multi-student sessions with sub-second latency.
+- **Designed** a **WebSocket event system** (Socket.IO) to broadcast questions, aggregate live answer percentages, and sync participant lists across all connected clients in real time.
+- **Implemented** a **role-based dual-interface** (Teacher & Student) with session management using unique session codes stored in MongoDB, enabling isolated multi-session control per browser tab via `sessionStorage`.
+- **Built** RESTful API endpoints with **Express** and **Mongoose** for session creation, question management, user registration, and poll history retrieval.
+- **Developed** a real-time **chat system** with role-differentiated styling and a **participant management** feature allowing teachers to remove disruptive students, with automatic database cleanup.
+- **Integrated** auto-closing poll logic that detects when all students have answered and immediately broadcasts final results, reducing manual teacher overhead.
+- **Styled** a fully responsive UI using **Tailwind CSS v4** with toast notifications (**React Toastify**) for seamless user feedback across all interactions.
+
+### Skills Demonstrated
+
+| Category | Technologies |
+|---|---|
+| Frontend | React 19, TypeScript, Vite, Tailwind CSS, React Router |
+| Backend | Node.js, Express, TypeScript |
+| Real-time | Socket.IO (WebSockets) |
+| Database | MongoDB, Mongoose ODM |
+| HTTP Client | Axios |
+| Build/Tooling | Vite, ESLint, tsc |
+
+### Project Highlights for Portfolio
+
+- **Real-time communication** — WebSocket architecture with Socket.IO handles bidirectional events between teachers and multiple students simultaneously.
+- **Stateful session management** — `sessionStorage`-based tab isolation lets one teacher manage multiple independent sessions across browser tabs.
+- **Full-stack TypeScript** — Shared type discipline across both frontend and backend reduces runtime errors and improves maintainability.
+- **Scalable data model** — Normalized MongoDB collections (`PollSession`, `Question`, `Answer`, `User`, `Message`) support complete poll history and per-user tracking.
+
+---
+
 ## 📝 License
 
 This project is licensed under the MIT License.
